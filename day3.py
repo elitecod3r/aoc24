@@ -2,6 +2,25 @@ import sys
 import re
 
 
+def add_mul_part2(input):
+    process_flag = True
+    total = 0 
+    
+    pattern = re.compile(r'(do\(\))|(don\'t\(\))|(mul\((\d{1,3}),(\d{1,3})\))')
+    for match in re.finditer(pattern, input):
+        if match.group(1):  # do 
+            process_flag = True
+        if match.group(2):  # do 
+            process_flag = False
+        if match.group(3):
+            a, b = int(match.group(4)), int(match.group(5))
+            if process_flag:
+                #print(f"Multiplying {a} and {b} gives {a * b}")
+                total += a * b
+            #else:
+                #print(f"Skipping {a} and {b}")
+
+    return total
 
 def add_mul(input):
     # iterate through every pattern in input that mataches mul(\d,\d)
@@ -28,6 +47,12 @@ def test_sample():
     assert 0 == add_mul('mul ( 2 , 4 )') == 0
     assert 161 == add_mul('xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))')
 
+
+def test_sample_2():
+    assert 48 == add_mul_part2("xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))")
+
+
 if __name__ == '__main__':
     input = read_input()
-    print(add_mul(input))
+    print(f'Part1 = {add_mul(input)}')
+    print(f'Part2 = {add_mul_part2(input)}')
