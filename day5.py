@@ -47,19 +47,44 @@ def test_sanity():
 
 
 def check_update(order_dict, update):
-    # If update matches the order list, return (True, middle_value), 
-    # else return (False, 0)
+    # return (flag, mid_value)
+    # if update matches the order, return True, mid_value 
+    # else return False, mid_value after fixing the update list
+    #
     update_dict = {}
     for idx, val in enumerate(update):
         update_dict[val] = idx
 
+    correct_order = True
+
     for a, b_list in order_dict.items():
+        if a not in update_dict:
+            continue 
+        
+        min_b_index = sys.maxsize
         for b in b_list:
-            if a in update_dict and b in update_dict and update_dict[a] > update_dict[b]:
-                return False, 0
+            if b in update_dict:
+                min_b_index = min(min_b_index, update_dict[b])
+
+        if min_b_index == sys.maxsize: # no b in the update list
+            continue
+        
+        a_index = update_dict[a]
+        if a_index > min_b_index:
+            correct_order = False
+            # fix the update list
+            update = update[:min_b_index] + [a] + update[min_b_index:a_index] + update[a_index+1:]
+            #print("inside this loop", correct_order, update)
+            break
+        
+    mid_index = len(update) // 2
+    mid_value = update[mid_index]
+    # Recursively try to fix the issue again
+    if not correct_order:
+        flag, mid_value = check_update(order_dict, update)
 
     mid_index = len(update) // 2
-    return True, update[mid_index]
+    return correct_order, mid_value
 
 
 def test_check_update():
@@ -67,25 +92,29 @@ def test_check_update():
     assert check_update(order_dict, update_list[0]) == (True, 61)
     assert check_update(order_dict, update_list[1]) == (True, 53)
     assert check_update(order_dict, update_list[2]) == (True, 29)
-    assert check_update(order_dict, update_list[3]) == (False , 0)
-    assert check_update(order_dict, update_list[4]) == (False, 0)
-    assert check_update(order_dict, update_list[5]) == (False, 0)
+    assert check_update(order_dict, update_list[3]) == (False, 47)
+    assert check_update(order_dict, update_list[4]) == (False, 29)
+    assert check_update(order_dict, update_list[5]) == (False, 47)
 
 
-def part1(filename):
+def find_answer(filename):
     order_dict, update_list = read_file(filename)
-    total = 0
+    part1_total = 0
+    part2_total = 0
     for update in update_list:
         status, mid_value = check_update(order_dict, update)
         if status:
-            total += mid_value
-    return total
+            part1_total += mid_value
+        else:
+            part2_total += mid_value
 
-def test_part1():
-    assert part1("day5_sample.txt") == 143
-    assert part1("day5_input.txt") == 5452
+    return part1_total, part2_total 
+
+def test_find_answer():
+    assert find_answer("day5_sample.txt") == (143, 123)
+    assert find_answer("day5_input.txt") == (5452, 4598)
 
 
 if __name__ == '__main__':
-    test_read_file()
-    print("Part1 = ", part1("day5_input.txt"))
+    test_check_update()
+    print("Part1, Part2 = ", find_answer("day5_input.txt"))
