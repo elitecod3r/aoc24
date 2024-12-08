@@ -4,7 +4,6 @@ import itertools
 
 # read until end of file
 def read_file(filename):
-
     input_data = []
 
     with open(filename, 'r') as f:
@@ -28,47 +27,36 @@ def eval_ops(num_list, op_list):
     for idx, op in enumerate(op_list):
         if op == '+':
             total = total + num_list[idx+1]
-        else:
+        elif op == '*':
             total = total * num_list[idx+1]
+        elif op == '||':
+            total = int(str(total) + str(num_list[idx+1]))
+        else:
+            assert False, 'Invalid operation'
+            
     return total
 
-def target_possible(target, num_list):
+def target_possible(target, num_list, operations):
     l = len(num_list) - 1
 
-    operations = ['+', '*']
     for op_list in itertools.product(operations, repeat=l):
         if eval_ops(num_list, op_list) == target:
             return True
     return False
 
-    if len(num_list) == 1:
-        return target == num
-
-    # Check if we can use a plus sign 
-    if target >= num:
-        if target_possible(target - num, num_list[1:]):
-            return True
-
-    # if we are here plus sign didn't work out. Let's try product sign 
-    print('   trying out products', target, num)
-    new_target = target // num
-    if new_target * num != target:
-        return False
-    print('   not fractional ')
-    
-    return target_possible(new_target, num_list[1:])
 
 def test_target_possible():
-    assert target_possible(3267, [81, 40, 27]) == True
-    assert target_possible(292, [11, 6, 16, 20]) == True
-    assert target_possible(156, [15, 6]) == False
+    operations = ['+', '*']
+    assert target_possible(3267, [81, 40, 27], operations) == True
+    assert target_possible(292, [11, 6, 16, 20], operations) == True
+    assert target_possible(156, [15, 6], operations) == False
 
 
-def total_of_possible_targets(filename):
+def total_of_possible_targets(filename, operations):
     input_data = read_file(filename)
     total = 0
     for target, num_list in input_data:
-        if target_possible(target, num_list):
+        if target_possible(target, num_list, operations):
             #print('Target:', target, 'is possible with', num_list)
             total += target
     return total
@@ -76,7 +64,12 @@ def total_of_possible_targets(filename):
 
 
 if __name__ == '__main__':
-    test_read_file()
-    test_target_possible()
-    print(total_of_possible_targets("day7_sample.txt"))
-    print(total_of_possible_targets("day7_input.txt"))
+    #test_read_file()
+    #test_target_possible()
+    p1_operations = ['+', '*']
+    print('Part1 - Sample ', total_of_possible_targets("day7_sample.txt", p1_operations))
+    print('Part1 - Input  ', total_of_possible_targets("day7_input.txt", p1_operations))
+
+    p2_operations = ['+', '*', '||']
+    print('Part1 - Sample ', total_of_possible_targets("day7_sample.txt", p2_operations))
+    print('Part1 - Input  ', total_of_possible_targets("day7_input.txt", p2_operations))
