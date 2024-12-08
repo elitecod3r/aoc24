@@ -67,21 +67,16 @@ def print_grid(grid):
         string = ''.join([f"{num: >2}" for num in row])
         print(f'{row_idx:>2} {string}')
 
-def move_player(grid, prow, pcol, pdir, obstacle_added=0):
-    # Returns (number_of_cells_visited, )
-    # Returns distinct_positions, obstacle_count, loop_detected 
+def move_player(grid, prow, pcol, pdir):
+    # Returns distinct_positions, loop_detected, path
     #  distinct_positions: number of cells visited by the player until they 
     #       walk off the grid. 
-    #  obstacle_count: number of obstacles we can place on the route to 
-    #       place the user on the loop.
     #  loop_detected: if there is a loop without adding an obstacle. This is 
     #       used to compute obstacle count since initial grid is not expected
     #       have loop
-
-    if obstacle_added > 1:
-        # We can only place one obstacle. Return if we have alredy placed 
-        #  2 or more obstacles. 
-        return 0, 0, False     
+    #  path : list of distinct cells visited by the player, except for the 
+    #       starting position. 
+    #
 
     # bit mask for steps in different direction
     dir_map = { "up": 2, "down": 4, "left": 8, "right": 16 }
@@ -90,13 +85,13 @@ def move_player(grid, prow, pcol, pdir, obstacle_added=0):
     # next_setp gives the increments for row and col if player takes one more step
     next_step = {"up": (-1, 0), "down": (+1, 0), "right": (0, +1), "left": (0, -1)}
     
-    obstacle_count = 0    
     distinct_positions = 1   # initial position is counted as already visited
     grid[prow][pcol] = grid[prow][pcol] | dir_map[pdir]
     loop_detected = False 
+    path = []
 
     while not loop_detected:
-        if False and obstacle_added == 0:  # don't print in recursive calls
+        if False:              # set to True to print grid and player position
             print('\n')
             print(f'== Player is at {prow}, {pcol} facing {pdir} ==')
             print_grid(grid)
@@ -122,49 +117,60 @@ def move_player(grid, prow, pcol, pdir, obstacle_added=0):
                 grid[prow][pcol] = grid[prow][pcol] | dir_map[pdir] 
             continue 
 
-        # At this stage, the cell in front is empty. We will first check 
-        # if we get a loop if we place an obstacle on the next step. 
-        if True:
-            if obstacle_added == 0:   
-                new_grid = copy.deepcopy(grid)
-                new_grid[next_row][next_col] = 1
-
-                ms1 = round(time.time() * 1000)
-                dp, oc, new_loop_detected = move_player(new_grid, prow, pcol, pdir, obstacle_added + 1)
-                if new_loop_detected:
-                    obstacle_count += 1
-                ms2 = round(time.time() * 1000)
-                #print(f'--->recursive call done {(ms2-ms1)/1000} {obstacle_count} ')
-        # We will now move to the next cell. Advance row/col but pdir stays the same
+        # At this stage, the cell in front is empty. We will now move to the 
+        #  next cell. Advance row/col but pdir stays the same
         prow = next_row
         pcol = next_col
 
         if grid[prow][pcol] == 0:
             distinct_positions += 1
-            #print(distinct_positions)
+            path.append((prow, pcol))
 
         if grid[prow][pcol] & dir_map[pdir]:
             loop_detected = True
         else:
             grid[prow][pcol] = grid[prow][pcol] | dir_map[pdir] 
 
-    return distinct_positions, obstacle_count, loop_detected
+    return distinct_positions, loop_detected, path
+
+def find_obstacle_count(grid, prow, pcol, pdir):
+    new_grid = copy.deepcopy(grid)
+    distinct_positions, loop_detected, path = move_player(new_grid, prow, pcol, pdir)
+    assert loop_detected == False, "Initial grid should not have a loop"
+
+    # Put obstacles in each of the steps in path and check if there is a loop
+    obstacle_count = 0
+    for row, col in path:
+        new_grid = copy.deepcopy(grid)
+        new_grid[row][col] = 1
+        _, loop_detected, _ = move_player(new_grid, prow, pcol, pdir)
+        if loop_detected:
+            obstacle_count += 1
+
+    return distinct_positions, obstacle_count
+
 
 def test_move_player():
-    distinct_positions, obstacle_count, loop_detected = move_player(*read_file("day6_sample.txt"))
+    distinct_positions, loop_detected, _ = move_player(*read_file("day6_sample.txt"))
     assert distinct_positions == 41
-    assert obstacle_count == 6
     assert loop_detected == False
 
-    distinct_positions, obstacle_count, loop_detected = move_player(*read_file("day6_input.txt"))
+    distinct_positions, loop_detected, _ = move_player(*read_file("day6_input.txt"))
     assert distinct_positions == 4964
-    assert obstacle_count == 0
     assert loop_detected == False
+
+    distinct_positions, obstacle_count = find_obstacle_count(*read_file("day6_sample.txt"))
+    assert distinct_positions == 41
+    assert obstacle_count == 6
+
 
 
 if __name__ == '__main__':
-    print(move_player(*read_file("day6_sample.txt")))
-    print(move_player(*read_file("day6_input.txt")))
+    distinct_positions, obstacle_count = find_obstacle_count(*read_file("day6_sample.txt"))
+    print(f'Part 1: {distinct_positions}    Part 2: {obstacle_count}')
+
+    distinct_positions, obstacle_count = find_obstacle_count(*read_file("day6_input.txt"))
+    print(f'Part 1: {distinct_positions}    Part 2: {obstacle_count}')
 
 
 
