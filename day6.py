@@ -1,4 +1,5 @@
 import copy
+import time
 
 # read until end of file
 def read_file(filename):
@@ -124,20 +125,23 @@ def move_player(grid, prow, pcol, pdir, obstacle_added=0):
         # At this stage, the cell in front is empty. We will first check 
         # if we get a loop if we place an obstacle on the next step. 
         if True:
-            new_grid = copy.deepcopy(grid)
-            new_grid[next_row][next_col] = 1
-            dp, oc, new_loop_detected = move_player(new_grid, prow, pcol, pdir, obstacle_added + 1)
-            if new_loop_detected:
-                obstacle_count += 1
-                #print(f'** found loop at {next_row}, {next_col} **')
-        
+            if obstacle_added == 0:   
+                new_grid = copy.deepcopy(grid)
+                new_grid[next_row][next_col] = 1
+
+                ms1 = round(time.time() * 1000)
+                dp, oc, new_loop_detected = move_player(new_grid, prow, pcol, pdir, obstacle_added + 1)
+                if new_loop_detected:
+                    obstacle_count += 1
+                ms2 = round(time.time() * 1000)
+                #print(f'--->recursive call done {(ms2-ms1)/1000} {obstacle_count} ')
         # We will now move to the next cell. Advance row/col but pdir stays the same
         prow = next_row
         pcol = next_col
 
         if grid[prow][pcol] == 0:
             distinct_positions += 1
-            print(distinct_positions)
+            #print(distinct_positions)
 
         if grid[prow][pcol] & dir_map[pdir]:
             loop_detected = True
@@ -153,7 +157,7 @@ def test_move_player():
     assert loop_detected == False
 
     distinct_positions, obstacle_count, loop_detected = move_player(*read_file("day6_input.txt"))
-    assert distinct_positions == 858
+    assert distinct_positions == 4964
     assert obstacle_count == 0
     assert loop_detected == False
 
