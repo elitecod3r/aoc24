@@ -27,32 +27,27 @@ def count_stones(in_list, blinks):
 
 blink_mapper = {}
 
-# return list of numbers generated after blinks blink starting from num
+# return count of numbers generated after blinks blink starting from num
 def num_blink(num, blinks):
     if blinks == 0:
-        return [num]
+        return 1
     if blink_mapper.get((num, blinks)):
         return blink_mapper[(num, blinks)]
 
     in_list = next_step([num])  
-    out_list = []
+    count = 0
     for n in in_list:
-        out_list.extend(num_blink(n, blinks-1))
-    blink_mapper[(num, blinks)] = out_list
-    return out_list
+        count += num_blink(n, blinks-1)
+    blink_mapper[(num, blinks)] = count
+    return count
 
 
 def count_stones_v2(in_list, blinks):
-    out_list = []
+    count = 0
         
     for num in in_list:
-        print('Processing ', num)
-        for i in range(1, blinks+1):
-            print('Processing ', num, i)
-            num_blink(num, i)
-        out_list.extend(num_blink(num, blinks))
-    print(out_list)
-    return len(out_list)
+        count += num_blink(num, blinks)
+    return count 
 
 
 def test_next_step():
@@ -79,5 +74,5 @@ if __name__ == '__main__':
     test_count_stones()
     test_count_stones_v2()
     print("Part1 = ", count_stones(input_list, 25))
-    print("Part1 = ", count_stones_v2(input_list, 75))
+    print("Part2 = ", count_stones_v2(input_list, 75))
 
