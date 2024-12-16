@@ -30,6 +30,47 @@ def move_robots(robot_set, num_moves, rows, cols):
         grid[pos_y][pos_x] += 1
     return grid
 
+def move_robot_and_update(grid, robot_set):
+    rows = len(grid)
+    cols = len(grid[0])
+    
+    for robot_index, robot_val in enumerate(robot_set):
+        position, velocity = robot_val
+        pos_x, pos_y = position
+        vel_x, vel_y = velocity
+
+        grid[pos_y][pos_x] -= 1
+        pos_x = (pos_x + vel_x) % cols 
+        pos_y = (pos_y + vel_y) % rows 
+        grid[pos_y][pos_x] += 1
+        robot_set[robot_index] = ((pos_x, pos_y), (vel_x, vel_y))
+
+
+def find_line(grid):
+    for row in grid:
+        count = 0 
+        for cell in row:
+            if cell > 0:
+                count += 1
+            else:
+                count = 0
+            if count > 8:
+                return True
+    return False
+
+
+def move_robots2(robot_set, num_moves, rows, cols):
+    grid = [[0 for _ in range(cols)] for _ in range(rows)]
+    for position, velocity in robot_set:
+        pos_x, pos_y = position
+        grid[pos_y][pos_x] += 1
+    for move_num in range(1,num_moves+1):
+        move_robot_and_update(grid, robot_set)
+        if find_line(grid):
+            print('\nMove:', move_num)
+            print_grid(grid)
+    return grid
+
 
 def print_grid(grid):
     for row in grid:
@@ -74,3 +115,5 @@ if __name__ == '__main__':
     grid = move_robots(read_file('day14_input.txt'), 100, 103 , 101)
     print('Input  :', safety_factor(grid))
     # 223432704 is too low.. First gues.. 
+
+    move_robots2(read_file('day14_input.txt'), 10000, 103 , 101)
