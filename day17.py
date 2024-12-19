@@ -43,17 +43,13 @@ def simulate_program(program, A, B, C):
 
         ip += 2
 
-    return ','.join(map(str, output))
-
+    return output
 
 def test_simulate_program():
     program = [0, 1, 5, 4, 3, 0]
-    assert simulate_program(program, A=729, B=0, C=0) == '4,6,3,5,6,3,5,2,1,0'
+    assert simulate_program(program, A=729, B=0, C=0) == [4,6,3,5,6,3,5,2,1,0]
 
 # Example use:
 program = [2,4,1,5,7,5,0,3,4,0,1,6,5,5,3,0]
-A_init = 46187030
-B_init = 0
-C_init = 0
-result = simulate_program(program, A_init, B_init, C_init)
-print("Part1:", result)
+result = simulate_program(program, A=46187030, B=0, C=0)
+print("Part1:", ','.join(map(str, result)))
