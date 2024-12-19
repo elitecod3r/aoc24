@@ -26,44 +26,51 @@ def test_read_file():
     assert designs[7] == 'bbrgwb'
 
 
-def is_possible(patterns, design, possible_designs):
+def count_possible(patterns, design, possible_designs):
     # Can we make the design using patterns 
     if design == '':
-        return True
+        return 1 
     
     if design in possible_designs:
         return possible_designs[design]
     
+    count = 0
     for pattern in patterns:
         # if pattern matches start of the design, remove it and recusively check
         if design.startswith(pattern):
             new_design = design[len(pattern):]
-            if is_possible(patterns, new_design, possible_designs):
-                possible_designs[new_design] = True
-                return True
-            else:
-                possible_designs[new_design] = False
-    return False
+            count += count_possible(patterns, new_design, possible_designs)
 
-def count_possible(patterns, designs):
+    possible_designs[design] = count
+    return count
+
+def part1(patterns, designs):
     count = 0
     possible_designs = {}
 
     for design in designs:
-        print('testing design:', design, end=' ')
-        if is_possible(patterns, design, possible_designs):
-            print('matches')
+        #print('testing design:', design, end=' ')
+        if count_possible(patterns, design, possible_designs) > 0:
+            #print('matches')
             count += 1
         else:
-            print('no match')
+            pass
+            #print('no match')
     return count
 
-def test_count_possible():
+def part2(patterns, designs):
+    count = 0
+    possible_designs = {}
+    for design in designs:
+        count += count_possible(patterns, design, possible_designs)
+    return count
+
+def test_part1():
     patterns, designs = read_file('day19_sample.txt')
-    assert count_possible(patterns, designs) == 6
+    assert part1(patterns, designs) == 6
  
 
 if __name__ == '__main__':
-    print('Main')
     patterns, designs = read_file('day19_input.txt')
-    print('Part1 = ', count_possible(patterns, designs))
+    print('Part1 = ', part1(patterns, designs))
+    print('Part2 = ', part2(patterns, designs))
