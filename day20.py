@@ -75,9 +75,24 @@ def find_new_path(grid, curr_row, curr_col, delta_row, delta_col):
         return MAX_PATH
     if grid[row][col] == WALL:
         return MAX_PATH
-    return grid[curr_row][curr_col]['start'] + grid[row][col]['end'] + 2 
+    
+    return grid[curr_row][curr_col]['start'] + grid[row][col]['end'] + abs(delta_row) + abs(delta_col)
 
-def find_cheats(in_grid, min_saving):
+def find_cheat_deltas(num_steps):
+    cheat_set = set()
+    for delta_row in range(-num_steps, num_steps+1):
+        for  delta_col in range(-num_steps, num_steps+1):
+            if abs(delta_row) + abs(delta_col) <= 1:
+                continue
+            if abs(delta_row) + abs(delta_col) <= num_steps:
+                cheat_set.add((delta_row, delta_col))
+    return cheat_set
+
+def test_find_cheat_deltas():
+    assert len(find_cheat_deltas(2)) == 8
+    #print('cheats with 20 steps', len(find_cheat_deltas(20)))
+
+def find_cheats(in_grid, cheat_steps, min_saving):
     grid, start_row, start_col, end_row, end_col  = find_path(in_grid)
     min_path = grid[start_row][start_col]['end']
     paths = 0
@@ -89,7 +104,8 @@ def find_cheats(in_grid, min_saving):
     #.#*#.#
     ##.#.##
     ###.###
-    cheat_deltas = [(2, 0), (-2, 0), (0, 2), (0, -2), (1, 1), (1, -1), (-1, 1), (-1, -1)]
+    #cheat_deltas = [(2, 0), (-2, 0), (0, 2), (0, -2), (1, 1), (1, -1), (-1, 1), (-1, -1)]
+    cheat_deltas = find_cheat_deltas(cheat_steps)
     for row_index, row in enumerate(grid):
         for col_index, cell in enumerate(row):
             if cell == WALL:
@@ -107,11 +123,13 @@ def test_find_cheats():
     grid = read_file('day20_sample.txt')
     #print_grid(grid)
     path_grid = find_path(grid)
-    assert find_cheats(grid, 60) == 1
-    assert find_cheats(grid, 1) == 44
+    assert find_cheats(grid, 2, 60) == 1
+    assert find_cheats(grid, 2, 1) == 44
+    assert find_cheats(grid, 20, 76) == 3
+    assert find_cheats(grid, 20, 74) == 7
 
 if __name__ == '__main__':
-    print('Part 1')
     grid = read_file('day20_input.txt')
     path_grid = find_path(grid)
-    print('cheats :', find_cheats(grid, 100))
+    print('Part 1 cheats :', find_cheats(grid, 2, 100))
+    print('Part 2 cheats :', find_cheats(grid, 20, 100))
